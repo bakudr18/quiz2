@@ -1,0 +1,10 @@
+list_merge_sort
+*.o
+*.o.d
+*.dSYM
+.vscode
+.devcontainer
+core*
+tags
+cscope.*
+cities.txt
