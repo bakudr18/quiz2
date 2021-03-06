@@ -103,6 +103,18 @@ static bool ele_insert_head(struct list_head *list, char *s)
     return true;
 }
 
+static void list_free(struct list_head *list)
+{
+    if (list_empty(list))
+        return;
+    struct list_head *node, *tmp;
+    list_for_each_safe(node, tmp, list)
+    {
+        list_del(node);
+        free(list_entry(node, list_ele_t, list));
+    }
+}
+
 int main(void)
 {
     FILE *fp = fopen("cities.txt", "r");
@@ -120,6 +132,7 @@ int main(void)
     list_merge_sort(&head);
     list_travesal(&head);
     assert(validate(&head));
+    list_free(&head);
 
     return 0;
 }
