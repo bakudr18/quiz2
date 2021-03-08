@@ -1,12 +1,16 @@
-TARGET = list_merge_sort
+TARGET = list_merge_sort bitcpy
 CC ?= cc
 CFLAGS ?= -Wall -O0 -g
-OBJS := list_merge_sort.o
+SORT_OBJS := list_merge_sort.o
+BITCPY_OBJS := bitcpy.o
 
-all: $(TARGET)
+all: list_merge_sort
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $@
+bitcpy: $(BITCPY_OBJS)
+	$(CC) $(CFLAGS) $< -o $@
+
+list_merge_sort: $(SORT_OBJS)
+	$(CC) $(CFLAGS) $(SORT_OBJS) -o $@
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
