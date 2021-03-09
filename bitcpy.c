@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -85,19 +86,14 @@ void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
 #define WRITEMASK(x) (uint8_t)((~0U) >> (x))
 
     if (read_lhs == write_lhs) {
+        uint8_t mask;
         uint8_t data = *source++;
         uint8_t original = *dest;
-        uint8_t mask;
-        if (read_lhs > 0) {
-            mask = ~READMASK(read_lhs);
-            if (count > read_rhs)
-                count -= read_rhs;
-            else {
-                mask &= READMASK(count + read_lhs);
-                count = 0;
-            }
-            *dest++ = (original & (~mask)) | (data & mask);
-        }
+        size_t bitsize = count > read_rhs ? read_rhs : count;
+        data = (data << read_lhs) & READMASK(bitsize);
+        mask = WRITEMASK(bitsize);
+        *dest++ = (original & mask) | (data >> read_lhs);
+        count -= bitsize;
 
         size_t bytecount = count / 8;
         if (bytecount > 0) {
@@ -169,7 +165,7 @@ int main(int _argc, char **_argv)
             for (int k = 0; k < 16; ++k) {
                 memset(&output[0], 0x00, sizeof(output));
                 printf("%2d:%2d:%2d ", i, k, j);
-                bitcpy(&output[0], k, &input[0], j, i);
+                bitcpy_align(&output[0], k, &input[0], j, i);
                 dump_binary(&output[0], 8);
                 printf("\n");
             }
