@@ -69,6 +69,39 @@ void bitcpy(void *_dest,      /* Address of the buffer to write to */
     }
 }
 
+void bitcpy_branch_predict(
+    void *_dest,      /* Address of the buffer to write to */
+    size_t _write,    /* Bit offset to start writing to */
+    const void *_src, /* Address of the buffer to read from */
+    size_t _read,     /* Bit offset to start reading from */
+    size_t count)
+{
+    size_t read_lhs = _read & 7;
+    size_t read_rhs = 8 - read_lhs;
+    const uint8_t *source = (const uint8_t *) _src + (_read / 8);
+    size_t write_lhs = _write & 7;
+    size_t write_rhs = 8 - write_lhs;
+    uint8_t *dest = (uint8_t *) _dest + (_write / 8);
+
+#define READMASK(x) (uint8_t)((~0U) << (8 - (x)))
+#define WRITEMASK(x) (uint8_t)((~0U) >> (x))
+
+    while (count > 0) {
+        uint8_t data = *source++;
+        size_t bitsize = (count > 8) ? 8 : count;
+        data = (data << read_lhs) | (*source >> read_rhs);
+        data &= READMASK(bitsize);
+
+        uint8_t mask = READMASK(write_lhs);
+        uint8_t original = *dest;
+        *dest++ = (original & mask) | (data >> write_lhs);
+        *dest &= WRITEMASK(bitsize - write_rhs);
+        *dest |= (data << write_rhs);
+
+        count -= bitsize;
+    }
+}
+
 void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
                   size_t _write,    /* Bit offset to start writing to */
                   const void *_src, /* Address of the buffer to read from */
@@ -113,28 +146,14 @@ void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
         while (count > 0) {
             uint8_t data = *source++;
             size_t bitsize = (count > 8) ? 8 : count;
-            if (read_lhs > 0) {
-                data <<= read_lhs;
-                if (bitsize > read_rhs)
-                    data |= (*source >> read_rhs);
-            }
+            data = (data << read_lhs) | (*source >> read_rhs);
+            data &= READMASK(bitsize);
 
-            if (bitsize < 8)
-                data &= READMASK(bitsize);
-
-            uint8_t original = *dest;
             uint8_t mask = READMASK(write_lhs);
-            if (bitsize > write_rhs) {
-                /* Cross multiple bytes */
-                *dest++ = (original & mask) | (data >> write_lhs);
-                original = *dest & WRITEMASK(bitsize - write_rhs);
-                *dest = original | (data << write_rhs);
-            } else {
-                // Since write_lhs + bitsize is never >= 8, no out-of-bound
-                // access.
-                mask |= WRITEMASK(write_lhs + bitsize);
-                *dest++ = (original & mask) | (data >> write_lhs);
-            }
+            uint8_t original = *dest;
+            *dest++ = (original & mask) | (data >> write_lhs);
+            *dest &= WRITEMASK(bitsize - write_rhs);
+            *dest |= (data << write_rhs);
 
             count -= bitsize;
         }
