@@ -1,7 +1,6 @@
-#include <assert.h>
+#include "bitcpy.h"
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 void bitcpy(void *_dest,      /* Address of the buffer to write to */
             size_t _write,    /* Bit offset to start writing to */
@@ -86,16 +85,16 @@ void bitcpy_branch_predict(
 #define READMASK(x) (uint8_t)((~0U) << (8 - (x)))
 #define WRITEMASK(x) (uint8_t)((~0U) >> (x))
 
+    uint8_t data;
+    size_t bitsize;
     while (count > 0) {
-        uint8_t data = *source++;
-        size_t bitsize = (count > 8) ? 8 : count;
+        data = *source++;
+        bitsize = (count > 8) ? 8 : count;
         data = (data << read_lhs) | (*source >> read_rhs);
         data &= READMASK(bitsize);
 
-        uint8_t mask = READMASK(write_lhs);
-        uint8_t original = *dest;
-        *dest++ = (original & mask) | (data >> write_lhs);
-        *dest &= WRITEMASK(bitsize - write_rhs);
+        *dest = (*dest & READMASK(write_lhs)) | (data >> write_lhs);
+        *(++dest) &= WRITEMASK(bitsize - write_rhs);
         *dest |= (data << write_rhs);
 
         count -= bitsize;
@@ -159,38 +158,3 @@ void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
         }
     }
 }
-
-static uint8_t output[8], input[8];
-
-static inline void dump_8bits(uint8_t _data)
-{
-    for (int i = 0; i < 8; ++i)
-        printf("%d", (_data & (0x80 >> i)) ? 1 : 0);
-    printf(" ");
-}
-
-static inline void dump_binary(uint8_t *_buffer, size_t _length)
-{
-    for (int i = 0; i < _length; ++i)
-        dump_8bits(*_buffer++);
-}
-
-int main(int _argc, char **_argv)
-{
-    memset(&input[0], 0xFF, sizeof(input));
-
-    for (int i = 1; i <= 32; ++i) {
-        for (int j = 0; j < 16; ++j) {
-            for (int k = 0; k < 16; ++k) {
-                memset(&output[0], 0x00, sizeof(output));
-                printf("%2d:%2d:%2d ", i, k, j);
-                bitcpy_align(&output[0], k, &input[0], j, i);
-                dump_binary(&output[0], 8);
-                printf("\n");
-            }
-        }
-    }
-
-    return 0;
-}
-

@@ -1,5 +1,6 @@
 list_merge_sort
 bitcpy
+bench_bitcpy
 *.o
 *.o.d
 *.dSYM
