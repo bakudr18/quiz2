@@ -1,7 +1,8 @@
-TARGET = list_merge_sort bitcpy bench_bitcpy
+TARGET = list_merge_sort bitcpy bench_bitcpy linux_sort
 CC ?= cc
 CFLAGS ?= -Wall -O3 -g
 SORT_OBJS := list_merge_sort.o
+LINUX_SORT_OBJS := linux_sort.o list_sort.o
 BITCPY_OBJS := bitcpy.o
 BITCPY_TEST_OBJS := test_bitcpy.o
 BITCPY_BENCH_OBJS := bench_bitcpy.o
@@ -15,6 +16,9 @@ bench_bitcpy: $(BITCPY_OBJS) $(BITCPY_BENCH_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 list_merge_sort: $(SORT_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
+
+linux_sort: $(LINUX_SORT_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 %.o: %.c
