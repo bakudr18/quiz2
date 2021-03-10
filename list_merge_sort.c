@@ -93,12 +93,15 @@ static bool ele_insert_head(struct list_head *list, char *s)
 {
     if (!list)
         return false;
-    size_t length = strlen(s) + 1;
+    int length = strlen(s) + 1;
+    if (length <= 0)
+        return false;
+
     list_ele_t *newh = malloc(sizeof(list_ele_t) + sizeof(char) * length);
     if (!newh)
         return false;
 
-    strncpy(newh->value, s, length);
+    strcpy(newh->value, s);
     list_add_tail(&newh->list, list);
     return true;
 }
