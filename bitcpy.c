@@ -82,8 +82,8 @@ void bitcpy_branch_predict(
     size_t write_rhs = 8 - write_lhs;
     uint8_t *dest = (uint8_t *) _dest + (_write / 8);
 
-#define READMASK(x) (uint8_t)((~0U) << (8 - (x)))
-#define WRITEMASK(x) (uint8_t)((~0U) >> (x))
+#define READMASK(x) ((uint8_t)(~0U) << (8 - (x)))
+#define WRITEMASK(x) ((uint8_t)(~0U) >> (x))
 
     uint8_t data;
     size_t bitsize;
@@ -114,8 +114,8 @@ void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
     size_t write_rhs = 8 - write_lhs;
     uint8_t *dest = (uint8_t *) _dest + (_write / 8);
 
-#define READMASK(x) (uint8_t)((~0U) << (8 - (x)))
-#define WRITEMASK(x) (uint8_t)((~0U) >> (x))
+#define READMASK(x) ((uint8_t)(~0U) << (8 - (x)))
+#define WRITEMASK(x) ((uint8_t)(~0U) >> (x))
 
     if (read_lhs == write_lhs) {
         uint8_t mask;
