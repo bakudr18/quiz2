@@ -9,4 +9,6 @@ bench_bitcpy
 core*
 tags
 cscope.*
-cities.txt
+*.txt
+*.png
+*.gp
