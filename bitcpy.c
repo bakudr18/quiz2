@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define READMASK(x) (uint8_t)((~0U) << (8 - (x)))
+#define WRITEMASK(x) (uint8_t)(~READMASK(x))
+
 void bitcpy(void *_dest,      /* Address of the buffer to write to */
             size_t _write,    /* Bit offset to start writing to */
             const void *_src, /* Address of the buffer to read from */
@@ -82,9 +85,6 @@ void bitcpy_branch_predict(
     size_t write_rhs = 8 - write_lhs;
     uint8_t *dest = (uint8_t *) _dest + (_write / 8);
 
-#define READMASK(x) ((uint8_t)(~0U) << (8 - (x)))
-#define WRITEMASK(x) ((uint8_t)(~0U) >> (x))
-
     uint8_t data, original;
     /* copy until count < 8 bits */
     for (size_t bytecount = count >> 3; bytecount > 0; bytecount--) {
@@ -117,9 +117,6 @@ void bitcpy_align(void *_dest,      /* Address of the buffer to write to */
     size_t write_lhs = _write & 7;
     size_t write_rhs = 8 - write_lhs;
     uint8_t *dest = (uint8_t *) _dest + (_write / 8);
-
-#define READMASK(x) ((uint8_t)(~0U) << (8 - (x)))
-#define WRITEMASK(x) ((uint8_t)(~0U) >> (x))
 
     if (read_lhs == write_lhs) {
         uint8_t mask;
